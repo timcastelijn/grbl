@@ -150,7 +150,7 @@ ISR(TIMER2_COMPA_vect)
     st.execute_step = false;
     STEPPING_PORT = ( STEPPING_PORT & ~(DIRECTION_MASK | STEP_MASK) ) | out_bits;
     TCNT0 = step_pulse_time; // Reload Timer0 counter.
-    TCCR0B = (1<<CS21); // Begin Timer0. Full speed, 1/8 prescaler
+    TCCR0B = (1<<CS01); // Begin Timer0. Full speed, 1/8 prescaler
   }
   
   busy = true;

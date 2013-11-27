@@ -30,6 +30,10 @@
 // Serial baud rate
 #define BAUD_RATE 9600
 
+// Start of PWM & Stepper Enabled Spindle
+// CURRENTLY IN TESTING USE WITH CAUTION @EliteEng
+#define VARIABLE_SPINDLE // comment this out to disable PWM & Stepper on the spindle
+
 // Define pin-assignments
 // NOTE: All step bit and direction pins must be on the same port.
 #define STEPPING_DDR       DDRD
@@ -49,6 +53,22 @@
 #define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK (1<<STEPPERS_DISABLE_BIT)
 
+#ifdef VARIABLE_SPINDLE // Y LImit has been disabled to make room for the Spindle PWM
+
+// NOTE: All limit bit pins must be on the same port
+#define LIMIT_DDR       DDRB
+#define LIMIT_PIN       PINB
+#define LIMIT_PORT      PORTB
+#define X_LIMIT_BIT     1  // Uno Digital Pin 9
+#define Y_LIMIT_BIT     1  // Uno Digital Pin 9
+#define Z_LIMIT_BIT     3  // Uno Digital Pin 11
+#define LIMIT_INT       PCIE0  // Pin change interrupt enable pin
+#define LIMIT_INT_vect  PCINT0_vect 
+#define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
+#define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
+
+#else
+
 // NOTE: All limit bit pins must be on the same port
 #define LIMIT_DDR       DDRB
 #define LIMIT_PIN       PINB
@@ -61,6 +81,13 @@
 #define LIMIT_PCMSK     PCMSK0 // Pin change interrupt register
 #define LIMIT_MASK ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 
+#endif
+
+// WARNING if INVERT_SPINDLE is defined the pin will be LOW(Active) on reset of controller until spindle_init() is called.
+// this should only be a very short period of time but will energise the spindle.
+// #define INVERT_SPINDLE // This will INVERT the Spindle LOW=Active
+// END WARNING
+
 #define SPINDLE_ENABLE_DDR   DDRB
 #define SPINDLE_ENABLE_PORT  PORTB
 #define SPINDLE_ENABLE_BIT   4  // Uno Digital Pin 12
@@ -68,6 +95,11 @@
 #define SPINDLE_DIRECTION_DDR   DDRB
 #define SPINDLE_DIRECTION_PORT  PORTB
 #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+
+// WARNING if INVERT_COOLANT is defined the pin will be LOW(Active) on reset of controller until coolant_init() is called.
+// this should only be a very short period of time but will energise the coolant pump.
+// #define INVERT_COOLANT // This will INVERT the Coolant LOW=Active
+// END WARNING
 
 #define COOLANT_FLOOD_DDR   DDRC
 #define COOLANT_FLOOD_PORT  PORTC
@@ -93,6 +125,32 @@
 #define PINOUT_INT_vect  PCINT1_vect
 #define PINOUT_PCMSK     PCMSK1 // Pin change interrupt register
 #define PINOUT_MASK ((1<<PIN_RESET)|(1<<PIN_FEED_HOLD)|(1<<PIN_CYCLE_START))
+
+#ifdef VARIABLE_SPINDLE
+
+//#define SPINDLE_IS_STEPPER // Uncomment this if your Spindle is a Stepper Motor
+#define SPINDLE_IS_PWM // Uncomment this if your Spindle uses PWM ie. DC Motor
+   #ifdef SPINDLE_IS_PWM
+     #define SPINDLE_MAX_RPM 255 // Max RPM of your spindle - This value is equal to 100% Duty Cycle on the PWM
+#endif
+#ifdef SPINDLE_IS_STEPPER
+     #define SPINDLE_STEPS_PER_REV  200 // if you have micro stepping enabled you need to calculate that to
+#endif
+// Advanced Configuration Below You should not need to touch these variables
+//Set Timer up to use TIMER4 OCR4B which is attached to Digital Pin 7
+#define TCCRA_REGISTER TCCR1A
+#define TCCRB_REGISTER TCCR1B
+#define OCRA_REGISTER OCR1A
+#define OCRB_REGISTER OCR1B
+#define COMB_BIT COM1B1
+#define WAVE0_REGISTER WGM10
+#define WAVE1_REGISTER WGM11
+#define WAVE2_REGISTER WGM12
+#define WAVE3_REGISTER WGM13
+#define SPINDLE_PWM_DDR   DDRB
+#define SPINDLE_PWM_PORT  PORTB
+#define SPINDLE_PWM_BIT   2 // UNO Digital Pin 10
+#endif // End of VARIABLE_SPINDLE
 
 // Define runtime command special characters. These characters are 'picked-off' directly from the
 // serial read data stream and are not passed to the grbl line execution parser. Select characters
