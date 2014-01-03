@@ -94,6 +94,11 @@
   #define SPINDLE_DIRECTION_PORT  PORTB
   #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
 
+// WARNING if INVERT_COOLANT is defined the pin will be LOW(Active) on reset of controller until coolant_init() is called.
+// this should only be a very short period of time but will energise the coolant pump.
+// #define INVERT_COOLANT // This will INVERT the Coolant LOW=Active
+// END WARNING
+
   #define COOLANT_FLOOD_DDR   DDRC
   #define COOLANT_FLOOD_PORT  PORTC
   #define COOLANT_FLOOD_BIT   3  // Uno Analog Pin 3
