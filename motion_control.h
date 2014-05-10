@@ -3,7 +3,7 @@
   Part of Grbl
 
   Copyright (c) 2009-2011 Simen Svale Skogsrud
-  Copyright (c) 2011-2012 Sungeun K. Jeon
+  Copyright (c) 2011-2013 Sungeun K. Jeon
   
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -28,7 +28,7 @@
 // Execute linear motion in absolute millimeter coordinates. Feed rate given in millimeters/second
 // unless invert_feed_rate is true. Then the feed_rate means that the motion should be completed in
 // (1 minute)/feed_rate time.
-void mc_line(float x, float y, float z, float feed_rate, uint8_t invert_feed_rate);
+void mc_line(float *target, float feed_rate, uint8_t invert_feed_rate);
 
 // Execute an arc in offset mode format. position == current xyz, target == target xyz, 
 // offset == offset from current xyz, axis_XXX defines circle plane in tool space, axis_linear is
@@ -41,9 +41,12 @@ void mc_arc(float *position, float *target, float *offset, uint8_t axis_0, uint8
 void mc_dwell(float seconds);
 
 // Perform homing cycle to locate machine zero. Requires limit switches.
-void mc_go_home();
+void mc_homing_cycle();
 
 // Performs system reset. If in motion state, kills all motion and sets system alarm.
 void mc_reset();
+
+// Executes the auto cycle feature, if enabled.
+void mc_auto_cycle_start();
 
 #endif

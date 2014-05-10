@@ -1,0 +1,5 @@
+ls /dev/tty.*
+
+screen /dev/tty.usbmodem411 115200
+
+/applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/bin/avrdude -C/applications/Arduino.app/Contents/Resources/Java/hardware/tools/avr/etc/avrdude.conf -pm328p -cstk500v1 -P/dev/tty.usbmodem411 -D -Uflash:w:grbl.hex

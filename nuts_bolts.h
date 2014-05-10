@@ -3,7 +3,7 @@
   Part of Grbl
 
   Copyright (c) 2009-2011 Simen Svale Skogsrud
-  Copyright (c) 2011-2012 Sungeun K. Jeon  
+  Copyright (c) 2011-2013 Sungeun K. Jeon  
 
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -33,16 +33,19 @@
 #define true 1
 
 #define N_AXIS 3 // Number of axes
-#define X_AXIS 0 // Axis indexing value
+#define X_AXIS 0 // Axis indexing value. Must start with 0 and be continuous.
 #define Y_AXIS 1
 #define Z_AXIS 2
 
 #define MM_PER_INCH (25.40)
 #define INCH_PER_MM (0.0393701)
 
+#define TICKS_PER_MICROSECOND (F_CPU/1000000)
+
 // Useful macros
 #define clear_vector(a) memset(a, 0, sizeof(a))
 #define clear_vector_float(a) memset(a, 0.0, sizeof(float)*N_AXIS)
+#define clear_vector_long(a) memset(a, 0.0, sizeof(long)*N_AXIS)
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
 
@@ -71,21 +74,21 @@
 // Define system state bit map. The state variable primarily tracks the individual functions
 // of Grbl to manage each without overlapping. It is also used as a messaging flag for
 // critical events.
-#define STATE_IDLE       0 // Must be zero.
-#define STATE_INIT       1 // Initial power up state.
-#define STATE_QUEUED     2 // Indicates buffered blocks, awaiting cycle start.
-#define STATE_CYCLE      3 // Cycle is running
-#define STATE_HOLD       4 // Executing feed hold
-#define STATE_HOMING     5 // Performing homing cycle
-#define STATE_ALARM      6 // In alarm state. Locks out all g-code processes. Allows settings access.
-#define STATE_CHECK_MODE 7 // G-code check mode. Locks out planner and motion only.
-// #define STATE_JOG     8 // Jogging mode is unique like homing.
+#define STATE_IDLE       0      // Must be zero. No flags.
+#define STATE_QUEUED     bit(0) // Indicates buffered blocks, awaiting cycle start.
+#define STATE_CYCLE      bit(1) // Cycle is running
+#define STATE_HOLD       bit(2) // Executing feed hold
+#define STATE_HOMING     bit(3) // Performing homing cycle
+#define STATE_ALARM      bit(4) // In alarm state. Locks out all g-code processes. Allows settings access.
+#define STATE_CHECK_MODE bit(5) // G-code check mode. Locks out planner and motion only.
+// #define STATE_JOG     bit(6) // Jogging mode is unique like homing.
 
 // Define global system variables
 typedef struct {
   uint8_t abort;                 // System abort flag. Forces exit back to main loop for reset.
   uint8_t state;                 // Tracks the current state of Grbl.
   volatile uint8_t execute;      // Global system runtime executor bitflag variable. See EXEC bitmasks.
+  uint8_t homing_axis_lock;
   int32_t position[N_AXIS];      // Real-time machine (aka home) position vector in steps. 
                                  // NOTE: This may need to be a volatile variable, if problems arise.   
   uint8_t auto_start;            // Planner auto-start flag. Toggled off during feed hold. Defaulted by settings.
@@ -103,7 +106,6 @@ void delay_ms(uint16_t ms);
 // Delays variable-defined microseconds. Compiler compatibility fix for _delay_us().
 void delay_us(uint32_t us);
 
-// Syncs Grbl's gcode and planner position variables with the system position.
-void sys_sync_current_position();
+uint8_t get_direction_mask(uint8_t i);
 
 #endif
